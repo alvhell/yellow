@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ============================================================
+       YELLOW — Açaí & Sorvetes
+       Website single-page (SPA) — HTML5 + Tailwind CSS + Alpine.js
+       Paleta: Amarelo vibrante · Roxo açaí · Branco
+       Mascote: Tigresa de óculos (SVG inline)
+       ============================================================ -->
+
+  <title>Yellow — Açaí &amp; Sorvetes | O melhor açaí e sorvete agora tem Cor!</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Yellow — Melhor Buffet de açaí e sorvetes!!!! Açaí, sorvete doce, sorvete salgado, fondue e Gelato Pet. Aqui tem sorvete para o seu pet também. Playground para crianças. Aqui a coisa não tem igual — vale a pena provar!" />
+  <meta name="keywords" content="açaí, sorvete, sorveteria, buffet de açaí, fondue, gelato pet, sorvete para pet, playground, Yellow" />
+  <meta name="author" content="Yellow Açaí & Sorvetes" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Yellow — Açaí & Sorvetes" />
+  <meta property="og:description" content="O melhor açaí e sorvete agora tem Cor! Yellow! Buffet de açaí, sorvete doce e salgado, fondue e Gelato Pet — aqui tem sorvete para o seu pet também." />
+  <meta property="og:site_name" content="Yellow Açaí & Sorvetes" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Favicon (placeholder — tigresa 🐯) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐯</text></svg>" />
+
+  <!-- Dados estruturados (SEO local) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "IceCreamShop",
+    "name": "Yellow Açaí & Sorvetes",
+    "slogan": "O melhor açaí e sorvete agora tem Cor! Yellow!",
+    "description": "Buffet de açaí e sorvetes, sorvete doce e salgado, fondue e Gelato Pet. Playground para crianças.",
+    "servesCuisine": ["Açaí", "Sorvete", "Fondue"],
+    "priceRange": "$$"
+  }
+  </script>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              yellow:  '#FFC400',  /* amarelo vibrante do letreiro   */
+              amber:   '#FFAA00',  /* amarelo-laranja de apoio       */
+              purple:  '#6D28D9',  /* roxo açaí principal            */
+              grape:   '#4C1D95',  /* roxo profundo (títulos/fundos) */
+              berry:   '#2E1065',  /* roxo quase-preto (modo escuro) */
+              cream:   '#FFFDF4'   /* branco-creme de fundo          */
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
+          },
+          borderRadius: { 'blob': '2rem' }
+        }
+      }
+    }
+  </script>
+
+  <!-- Fonte Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Alpine.js via CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+  <!-- Aplica o tema salvo ANTES do primeiro paint (evita flash) -->
+  <script>
+    if (localStorage.theme === 'dark' ||
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <style>
+    /* ---------- Animações de entrada ao rolar (Intersection Observer) ---------- */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.in-view { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+    .reveal-delay-4 { transition-delay: .4s; }
+
+    /* ---------- Faixa deslizante (marquee) ---------- */
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .marquee-track { animation: marquee 22s linear infinite; }
+
+    /* ---------- Flutuação suave da mascote ---------- */
+    @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    .floaty { animation: floaty 4.5s ease-in-out infinite; }
+
+    /* ---------- Scrollbar discreta ---------- */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-thumb { background: #6D28D9; border-radius: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* Respeita usuários que preferem menos movimento */
+    @media (prefers-reduced-motion: reduce) {
+      .marquee-track, .floaty { animation: none; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-brand-cream text-slate-800 dark:bg-brand-berry dark:text-slate-100 antialiased selection:bg-brand-yellow selection:text-brand-grape"
+      x-data="{ mobileOpen: false, showTop: false,
+                dark: document.documentElement.classList.contains('dark'),
+                toggleDark() { this.dark = !this.dark;
+                               document.documentElement.classList.toggle('dark', this.dark);
+                               localStorage.theme = this.dark ? 'dark' : 'light'; } }"
+      @scroll.window="showTop = window.scrollY > 600">
+
+  <!-- ==================== MASCOTE (SVG reutilizável) ==================== -->
+  <svg width="0" height="0" class="absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="furGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FFD34D"/>
+        <stop offset="100%" stop-color="#FFAA00"/>
+      </linearGradient>
+    </defs>
+    <!-- Tigresa Yellow, de óculos -->
+    <symbol id="tigresa" viewBox="0 0 200 200">
+      <!-- Orelhas -->
+      <circle cx="52" cy="46" r="26" fill="#F59E0B"/>
+      <circle cx="148" cy="46" r="26" fill="#F59E0B"/>
+      <circle cx="52" cy="46" r="13" fill="#6D28D9"/>
+      <circle cx="148" cy="46" r="13" fill="#6D28D9"/>
+      <!-- Cabeça -->
+      <ellipse cx="100" cy="110" rx="74" ry="68" fill="url(#furGrad)"/>
+      <!-- Listras da testa -->
+      <path d="M100 44 q-4 14 0 24" stroke="#4C1D95" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M82 48 q-3 10 1 18"  stroke="#4C1D95" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <path d="M118 48 q3 10 -1 18" stroke="#4C1D95" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <!-- Listras das bochechas -->
+      <path d="M30 104 q12 4 22 2"  stroke="#4C1D95" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <path d="M32 120 q11 4 20 1"  stroke="#4C1D95" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <path d="M170 104 q-12 4 -22 2" stroke="#4C1D95" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <path d="M168 120 q-11 4 -20 1" stroke="#4C1D95" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <!-- Focinho -->
+      <ellipse cx="100" cy="142" rx="34" ry="24" fill="#FFFDF4"/>
+      <path d="M92 132 h16 l-8 10 z" fill="#4C1D95"/>
+      <path d="M100 142 v8 M100 150 q-8 8 -16 2 M100 150 q8 8 16 2"
+            stroke="#4C1D95" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <!-- Óculos -->
+      <circle cx="70" cy="104" r="21" fill="#FFFFFF" fill-opacity="0.35" stroke="#6D28D9" stroke-width="6"/>
+      <circle cx="130" cy="104" r="21" fill="#FFFFFF" fill-opacity="0.35" stroke="#6D28D9" stroke-width="6"/>
+      <path d="M91 104 q9 -8 18 0" stroke="#6D28D9" stroke-width="6" fill="none"/>
+      <path d="M49 100 L30 92" stroke="#6D28D9" stroke-width="6" stroke-linecap="round"/>
+      <path d="M151 100 L170 92" stroke="#6D28D9" stroke-width="6" stroke-linecap="round"/>
+      <!-- Olhos + cílios (tigresa!) -->
+      <circle cx="70" cy="106" r="7" fill="#1E1B4B"/>
+      <circle cx="130" cy="106" r="7" fill="#1E1B4B"/>
+      <circle cx="72.5" cy="103.5" r="2.2" fill="#FFFFFF"/>
+      <circle cx="132.5" cy="103.5" r="2.2" fill="#FFFFFF"/>
+      <path d="M60 95 l-6 -5 M65 92 l-4 -6"   stroke="#1E1B4B" stroke-width="3" stroke-linecap="round"/>
+      <path d="M140 95 l6 -5 M135 92 l4 -6"   stroke="#1E1B4B" stroke-width="3" stroke-linecap="round"/>
+      <!-- Lacinho -->
+      <g transform="translate(148,22) rotate(18)">
+        <path d="M0 8 L-16 0 L-14 18 Z" fill="#6D28D9"/>
+        <path d="M4 8 L20 0 L18 18 Z" fill="#6D28D9"/>
+        <circle cx="2" cy="9" r="5" fill="#FFC400"/>
+      </g>
+    </symbol>
+  </svg>
+
+  <!-- ============================ NAVBAR ============================ -->
+  <header class="fixed inset-x-0 top-0 z-50 bg-brand-yellow/95 dark:bg-brand-grape/95 backdrop-blur shadow-lg">
+    <nav class="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 sm:h-20" aria-label="Navegação principal">
+
+      <!-- Logo -->
+      <a href="#inicio" class="flex items-center gap-2 sm:gap-3 group">
+        <svg class="w-10 h-10 sm:w-12 sm:h-12 drop-shadow group-hover:scale-110 transition-transform" role="img" aria-label="Mascote Yellow — tigresa de óculos">
+          <use href="#tigresa"/>
+        </svg>
+        <span class="text-2xl sm:text-3xl font-black tracking-tight text-brand-grape dark:text-brand-yellow">
+          Yellow<span class="text-white drop-shadow-sm">.</span>
+        </span>
+      </a>
+
+      <!-- Links desktop -->
+      <ul class="hidden lg:flex items-center gap-7 font-semibold text-brand-grape dark:text-brand-cream">
+        <li><a href="#inicio"    class="hover:text-white transition-colors">Início</a></li>
+        <li><a href="#cardapio"  class="hover:text-white transition-colors">Cardápio</a></li>
+        <li><a href="#buffet"    class="hover:text-white transition-colors">Buffet</a></li>
+        <li><a href="#gelato-pet" class="hover:text-white transition-colors">Gelato Pet 🐾</a></li>
+        <li><a href="#kids"      class="hover:text-white transition-colors">Espaço Kids</a></li>
+        <li><a href="#sobre"     class="hover:text-white transition-colors">Sobre</a></li>
+      </ul>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Toggle dark/light -->
+        <button @click="toggleDark()"
+                class="w-10 h-10 rounded-full grid place-items-center bg-white/40 dark:bg-white/10 text-brand-grape dark:text-brand-yellow hover:scale-110 transition-transform"
+                :aria-label="dark ? 'Ativar modo claro' : 'Ativar modo escuro'">
+          <span x-text="dark ? '☀️' : '🌙'" class="text-lg"></span>
+        </button>
+
+        <!-- CTA -->
+        <a href="#visite"
+           class="hidden sm:inline-flex items-center gap-2 rounded-full bg-brand-purple text-white font-bold px-5 py-2.5 shadow-md hover:bg-brand-grape hover:shadow-xl transition-all">
+          Peça agora
+        </a>
+
+        <!-- Hambúrguer mobile -->
+        <button class="lg:hidden w-10 h-10 grid place-items-center rounded-lg bg-white/40 dark:bg-white/10 text-brand-grape dark:text-brand-yellow"
+                @click="mobileOpen = !mobileOpen" :aria-expanded="mobileOpen" aria-label="Abrir menu">
+          <svg x-show="!mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <svg x-show="mobileOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Menu mobile -->
+    <div x-show="mobileOpen" x-cloak x-transition.origin.top
+         class="lg:hidden bg-brand-yellow dark:bg-brand-grape border-t border-white/30 shadow-xl">
+      <ul class="px-6 py-4 space-y-3 font-semibold text-brand-grape dark:text-brand-cream">
+        <li><a @click="mobileOpen=false" href="#inicio"     class="block py-1.5">Início</a></li>
+        <li><a @click="mobileOpen=false" href="#cardapio"   class="block py-1.5">Cardápio</a></li>
+        <li><a @click="mobileOpen=false" href="#buffet"     class="block py-1.5">Buffet</a></li>
+        <li><a @click="mobileOpen=false" href="#gelato-pet" class="block py-1.5">Gelato Pet 🐾</a></li>
+        <li><a @click="mobileOpen=false" href="#kids"       class="block py-1.5">Espaço Kids</a></li>
+        <li><a @click="mobileOpen=false" href="#sobre"      class="block py-1.5">Sobre</a></li>
+        <li><a @click="mobileOpen=false" href="#visite"
+               class="block text-center mt-2 rounded-full bg-brand-purple text-white font-bold px-5 py-2.5">Peça agora</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ============================ HERO ============================ -->
+  <section id="inicio" class="relative overflow-hidden pt-28 sm:pt-36 pb-20 sm:pb-28
+                              bg-gradient-to-br from-brand-yellow via-amber-300 to-brand-amber
+                              dark:from-brand-grape dark:via-brand-berry dark:to-black">
+    <!-- Bolhas decorativas -->
+    <div class="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-brand-purple/20 blur-3xl"></div>
+    <div class="pointer-events-none absolute -bottom-32 -right-16 w-96 h-96 rounded-full bg-white/30 dark:bg-brand-purple/20 blur-3xl"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Texto -->
+      <div class="text-center lg:text-left">
+        <p class="reveal inline-flex items-center gap-2 rounded-full bg-brand-purple text-white text-sm sm:text-base font-bold px-4 py-1.5 shadow-md">
+          🏆 Melhor Buffet de açaí e sorvetes!!!!
+        </p>
+
+        <h1 class="reveal reveal-delay-1 mt-6 text-4xl sm:text-5xl xl:text-6xl font-black leading-[1.05] text-brand-grape dark:text-white">
+          O melhor açaí e sorvete<br class="hidden sm:block" />
+          agora tem <span class="text-white dark:text-brand-yellow drop-shadow-[0_2px_0_rgba(76,29,149,.35)]">Cor</span>!
+          <span class="block mt-2 text-brand-purple dark:text-brand-yellow">Yellow!</span>
+        </h1>
+
+        <p class="reveal reveal-delay-2 mt-6 text-lg sm:text-xl font-medium text-brand-grape/90 dark:text-slate-200 max-w-xl mx-auto lg:mx-0">
+          Açaí na tigela, sorvete doce, sorvete salgado, fondue e até <strong>Gelato Pet</strong> —
+          aqui a coisa não tem igual, <em>vale a pena provar!</em>
+        </p>
+
+        <div class="reveal reveal-delay-3 mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
+          <a href="#cardapio"
+             class="rounded-full bg-brand-purple text-white font-bold px-8 py-3.5 text-lg shadow-xl hover:bg-brand-grape hover:-translate-y-0.5 transition-all">
+            Ver cardápio 🍧
+          </a>
+          <a href="#gelato-pet"
+             class="rounded-full bg-white/80 dark:bg-white/10 text-brand-grape dark:text-brand-yellow font-bold px-8 py-3.5 text-lg shadow-lg hover:bg-white hover:-translate-y-0.5 transition-all">
+            Sorvete para pets 🐶
+          </a>
+        </div>
+
+        <!-- Selos de confiança -->
+        <ul class="reveal reveal-delay-4 mt-10 flex flex-wrap justify-center lg:justify-start gap-x-8 gap-y-3 text-sm font-semibold text-brand-grape/80 dark:text-slate-300">
+          <li class="flex items-center gap-2">✔️ Buffet self-service</li>
+          <li class="flex items-center gap-2">✔️ Playground para crianças</li>
+          <li class="flex items-center gap-2">✔️ Ambiente para toda a família</li>
+        </ul>
+      </div>
+
+      <!-- Mascote -->
+      <div class="reveal reveal-delay-2 relative mx-auto">
+        <div class="absolute inset-0 m-auto w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-white/50 dark:bg-brand-purple/30 blur-2xl"></div>
+        <svg class="floaty relative w-64 h-64 sm:w-80 sm:h-80 xl:w-96 xl:h-96 drop-shadow-2xl" role="img"
+             aria-label="Tigresa Yellow, a mascote da sorveteria, usando óculos roxos e lacinho">
+          <use href="#tigresa"/>
+        </svg>
+        <p class="relative text-center mt-4 font-black text-brand-grape dark:text-brand-yellow text-lg tracking-wide">
+          Tili, a tigresa Yellow 🐯💛
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FAIXA MARQUEE ==================== -->
+  <div class="bg-brand-purple dark:bg-brand-grape overflow-hidden py-3 border-y-4 border-brand-yellow" aria-hidden="true">
+    <div class="marquee-track flex w-max whitespace-nowrap gap-8 text-brand-yellow font-black text-lg tracking-widest uppercase">
+      <span>Açaí</span><span>•</span><span>Sorvete Doce</span><span>•</span><span>Sorvete Salgado</span><span>•</span><span>Fondue</span><span>•</span><span>Gelato Pet</span><span>•</span>
+      <span>Açaí</span><span>•</span><span>Sorvete Doce</span><span>•</span><span>Sorvete Salgado</span><span>•</span><span>Fondue</span><span>•</span><span>Gelato Pet</span><span>•</span>
+    </div>
+  </div>
+
+  <!-- ============================ CARDÁPIO ============================ -->
+  <section id="cardapio" class="py-20 sm:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto">
+        <p class="reveal font-bold text-brand-purple dark:text-brand-yellow uppercase tracking-widest text-sm">Nosso cardápio</p>
+        <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-grape dark:text-white">
+          Cinco jeitos de se apaixonar 💛💜
+        </h2>
+        <p class="reveal reveal-delay-2 mt-4 text-lg text-slate-600 dark:text-slate-300">
+          Do clássico açaí na tigela ao inédito sorvete salgado — tem sabor para todo mundo (e para todo pet).
+        </p>
+      </div>
+
+      <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <!-- Card: Açaí -->
+        <article class="reveal group rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all border-b-4 border-brand-purple">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-purple/10 dark:bg-brand-purple/30 text-4xl group-hover:scale-110 transition-transform">🍇</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-grape dark:text-brand-yellow">Açaí</h3>
+          <p class="mt-3 text-slate-600 dark:text-slate-300">
+            Cremoso, gelado e servido do seu jeito: monte sua tigela no buffet com dezenas de complementos, frutas e caldas.
+          </p>
+        </article>
+
+        <!-- Card: Sorvete Doce -->
+        <article class="reveal reveal-delay-1 group rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all border-b-4 border-brand-yellow">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-yellow/20 text-4xl group-hover:scale-110 transition-transform">🍦</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-grape dark:text-brand-yellow">Sorvete Doce</h3>
+          <p class="mt-3 text-slate-600 dark:text-slate-300">
+            Os clássicos que todo mundo ama e as receitas exclusivas da casa, feitos com ingredientes selecionados.
+          </p>
+        </article>
+
+        <!-- Card: Sorvete Salgado -->
+        <article class="reveal reveal-delay-2 group rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all border-b-4 border-brand-purple">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-purple/10 dark:bg-brand-purple/30 text-4xl group-hover:scale-110 transition-transform">🧀</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-grape dark:text-brand-yellow">Sorvete Salgado</h3>
+          <p class="mt-3 text-slate-600 dark:text-slate-300">
+            A nossa ousadia premiada: sabores salgados surpreendentes que você só encontra aqui. Duvida? Vale a pena provar!
+          </p>
+        </article>
+
+        <!-- Card: Fondue -->
+        <article class="reveal reveal-delay-1 group rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all border-b-4 border-brand-yellow">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-yellow/20 text-4xl group-hover:scale-110 transition-transform">🫕</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-grape dark:text-brand-yellow">Fondue</h3>
+          <p class="mt-3 text-slate-600 dark:text-slate-300">
+            Chocolate quentinho encontrando sorvete gelado: a combinação perfeita para compartilhar com quem você gosta.
+          </p>
+        </article>
+
+        <!-- Card: Gelato Pet -->
+        <article class="reveal reveal-delay-2 group rounded-blob bg-gradient-to-br from-brand-purple to-brand-grape p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all sm:col-span-2 lg:col-span-1">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-white/15 text-4xl">🐾</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-yellow">Gelato Pet</h3>
+          <p class="mt-3 text-purple-100">
+            Aqui tem sorvete para o seu pet também! Gelato desenvolvido especialmente para cães, sem açúcar e sem lactose.
+          </p>
+          <a href="#gelato-pet" class="mt-5 inline-block font-bold text-brand-yellow underline underline-offset-4 hover:text-white transition-colors">
+            Conhecer o Gelato Pet →
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ BUFFET ============================ -->
+  <section id="buffet" class="py-20 sm:py-28 bg-brand-yellow/20 dark:bg-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="reveal font-bold text-brand-purple dark:text-brand-yellow uppercase tracking-widest text-sm">Buffet self-service</p>
+        <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-grape dark:text-white">
+          Melhor Buffet de açaí e sorvetes!!!!
+        </h2>
+        <p class="reveal reveal-delay-2 mt-5 text-lg text-slate-600 dark:text-slate-300">
+          Monte a combinação perfeita: você escolhe a base, os complementos, as frutas e as caldas.
+          No buffet da Yellow, cada tigela é única — do jeitinho que você (ou seu pet 🐶) merece.
+        </p>
+        <ul class="reveal reveal-delay-3 mt-8 space-y-4 text-slate-700 dark:text-slate-200 font-medium">
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🍨</span> Dezenas de sabores de sorvete doce e salgado</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🍓</span> Complementos fresquinhos repostos o dia todo</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🍫</span> Estação de fondue e caldas quentes</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">👨‍👩‍👧‍👦</span> Espaço amplo e confortável para toda a família</li>
+        </ul>
+      </div>
+
+      <!-- Painel ilustrativo -->
+      <div class="reveal reveal-delay-2">
+        <div class="rounded-blob bg-gradient-to-br from-brand-purple via-brand-grape to-brand-berry p-10 sm:p-14 text-center shadow-2xl">
+          <div class="text-7xl sm:text-8xl">🍧</div>
+          <p class="mt-6 text-2xl sm:text-3xl font-black text-brand-yellow leading-snug">
+            “Aqui a coisa não tem igual —<br /> vale a pena provar!”
+          </p>
+          <p class="mt-4 text-purple-200 font-semibold">Slogan oficial da casa 💛</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ GELATO PET ============================ -->
+  <section id="gelato-pet" class="py-20 sm:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Painel ilustrativo -->
+      <div class="reveal order-2 lg:order-1">
+        <div class="rounded-blob bg-brand-yellow p-10 sm:p-14 text-center shadow-2xl relative overflow-hidden">
+          <div class="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-brand-purple/15 blur-xl"></div>
+          <div class="text-7xl sm:text-8xl">🐕🍦</div>
+          <p class="mt-6 text-2xl sm:text-3xl font-black text-brand-grape leading-snug">
+            Aqui tem sorvete<br />para o seu pet também!
+          </p>
+          <p class="mt-4 text-brand-grape/70 font-semibold">Gelato Pet — exclusividade Yellow 🐾</p>
+        </div>
+      </div>
+
+      <div class="order-1 lg:order-2">
+        <p class="reveal font-bold text-brand-purple dark:text-brand-yellow uppercase tracking-widest text-sm">Gelato Pet 🐾</p>
+        <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-grape dark:text-white">
+          Sobremesa gelada para o melhor amigo
+        </h2>
+        <p class="reveal reveal-delay-2 mt-5 text-lg text-slate-600 dark:text-slate-300">
+          O passeio ficou completo: enquanto você saboreia seu açaí, seu companheiro de quatro patas
+          ganha um gelato feito sob medida para ele.
+        </p>
+        <ul class="reveal reveal-delay-3 mt-8 space-y-4 text-slate-700 dark:text-slate-200 font-medium">
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">✅</span> Receita própria para cães: sem açúcar, sem lactose e sem corantes</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🥣</span> Servido em potinho individual, na medida certa</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🐶</span> Ambiente pet friendly com área externa coberta</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ ESPAÇO KIDS ============================ -->
+  <section id="kids" class="py-20 sm:py-28 bg-brand-purple dark:bg-brand-grape relative overflow-hidden">
+    <div class="pointer-events-none absolute -top-20 left-1/4 w-72 h-72 rounded-full bg-brand-yellow/10 blur-3xl"></div>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="reveal font-bold text-brand-yellow uppercase tracking-widest text-sm">Espaço Kids</p>
+      <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-white">
+        Playground para crianças 🎠
+      </h2>
+      <p class="reveal reveal-delay-2 mt-5 text-lg text-purple-100 max-w-2xl mx-auto">
+        Enquanto os pequenos brincam com segurança no nosso playground, os adultos aproveitam o açaí com tranquilidade.
+        A Yellow foi feita para a família inteira — inclusive a parte que não para quieta.
+      </p>
+      <div class="reveal reveal-delay-3 mt-12 grid sm:grid-cols-3 gap-6">
+        <div class="rounded-blob bg-white/10 p-8">
+          <div class="text-5xl">🛝</div>
+          <h3 class="mt-4 font-extrabold text-brand-yellow text-xl">Brinquedos seguros</h3>
+          <p class="mt-2 text-purple-100 text-sm">Estrutura pensada para a diversão (e a tranquilidade dos pais).</p>
+        </div>
+        <div class="rounded-blob bg-white/10 p-8">
+          <div class="text-5xl">🎉</div>
+          <h3 class="mt-4 font-extrabold text-brand-yellow text-xl">Festas e aniversários</h3>
+          <p class="mt-2 text-purple-100 text-sm">Comemore na Yellow com buffet de açaí, sorvete e fondue.</p>
+        </div>
+        <div class="rounded-blob bg-white/10 p-8">
+          <div class="text-5xl">👀</div>
+          <h3 class="mt-4 font-extrabold text-brand-yellow text-xl">Visão total do espaço</h3>
+          <p class="mt-2 text-purple-100 text-sm">Layout aberto: você acompanha as crianças de qualquer mesa.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ SOBRE ============================ -->
+  <section id="sobre" class="py-20 sm:py-28">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="reveal font-bold text-brand-purple dark:text-brand-yellow uppercase tracking-widest text-sm">Nossa história</p>
+      <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-grape dark:text-white">
+        Por que <span class="text-brand-purple dark:text-brand-yellow">Yellow</span>?
+      </h2>
+      <p class="reveal reveal-delay-2 mt-6 text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+        Porque sabor tem cor — e a nossa é o amarelo vibrante da alegria com o roxo profundo do açaí.
+        A Yellow nasceu para ser mais do que uma sorveteria: um lugar onde a família inteira se encontra,
+        do vovô ao pet. Guiados pela nossa mascote <strong>Tili, a tigresa de óculos</strong>,
+        levamos a sério uma única regra: <em>aqui a coisa não tem igual — vale a pena provar!</em>
+      </p>
+
+      <!-- Números da casa -->
+      <div class="reveal reveal-delay-3 mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6">
+        <div class="rounded-2xl bg-brand-yellow/25 dark:bg-white/5 p-6">
+          <p class="text-3xl font-black text-brand-purple dark:text-brand-yellow">30+</p>
+          <p class="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">sabores no buffet</p>
+        </div>
+        <div class="rounded-2xl bg-brand-yellow/25 dark:bg-white/5 p-6">
+          <p class="text-3xl font-black text-brand-purple dark:text-brand-yellow">5</p>
+          <p class="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">linhas de produto</p>
+        </div>
+        <div class="rounded-2xl bg-brand-yellow/25 dark:bg-white/5 p-6">
+          <p class="text-3xl font-black text-brand-purple dark:text-brand-yellow">100%</p>
+          <p class="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">pet friendly</p>
+        </div>
+        <div class="rounded-2xl bg-brand-yellow/25 dark:bg-white/5 p-6">
+          <p class="text-3xl font-black text-brand-purple dark:text-brand-yellow">1</p>
+          <p class="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">tigresa de óculos 🐯</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ DEPOIMENTOS ============================ -->
+  <section class="py-20 sm:py-28 bg-brand-yellow/20 dark:bg-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="reveal text-center text-3xl sm:text-4xl font-black text-brand-grape dark:text-white">
+        Quem prova, aprova 💬
+      </h2>
+      <p class="reveal reveal-delay-1 mt-3 text-center text-slate-500 dark:text-slate-400 text-sm">
+        (Espaço para avaliações reais dos seus clientes — Google, iFood e Instagram)
+      </p>
+      <div class="mt-12 grid md:grid-cols-3 gap-6 lg:gap-8">
+        <figure class="reveal rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg">
+          <div class="text-brand-yellow text-xl" aria-label="5 estrelas">★★★★★</div>
+          <blockquote class="mt-4 text-slate-600 dark:text-slate-300 italic">“O açaí mais cremoso da cidade e o buffet é completo demais. Meu filho não quer mais sair do playground!”</blockquote>
+          <figcaption class="mt-5 font-bold text-brand-grape dark:text-brand-yellow">— Cliente Yellow</figcaption>
+        </figure>
+        <figure class="reveal reveal-delay-1 rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg">
+          <div class="text-brand-yellow text-xl" aria-label="5 estrelas">★★★★★</div>
+          <blockquote class="mt-4 text-slate-600 dark:text-slate-300 italic">“Levei minha cachorra e ela ganhou um Gelato Pet. Nunca vi esse carinho em outra sorveteria!”</blockquote>
+          <figcaption class="mt-5 font-bold text-brand-grape dark:text-brand-yellow">— Cliente Yellow</figcaption>
+        </figure>
+        <figure class="reveal reveal-delay-2 rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg">
+          <div class="text-brand-yellow text-xl" aria-label="5 estrelas">★★★★★</div>
+          <blockquote class="mt-4 text-slate-600 dark:text-slate-300 italic">“Sorvete salgado parecia estranho… até eu provar. Agora é parada obrigatória no fim de semana.”</blockquote>
+          <figcaption class="mt-5 font-bold text-brand-grape dark:text-brand-yellow">— Cliente Yellow</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CTA FINAL ============================ -->
+  <section id="visite" class="py-20 sm:py-28 bg-gradient-to-br from-brand-yellow via-amber-300 to-brand-amber dark:from-brand-grape dark:via-brand-berry dark:to-black relative overflow-hidden">
+    <div class="pointer-events-none absolute -top-16 right-10 w-64 h-64 rounded-full bg-brand-purple/20 blur-3xl"></div>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <svg class="reveal w-24 h-24 mx-auto drop-shadow-xl" role="img" aria-label="Mascote Yellow">
+        <use href="#tigresa"/>
+      </svg>
+      <h2 class="reveal reveal-delay-1 mt-6 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-grape dark:text-white">
+        Bateu a vontade? A Yellow te espera! 💛💜
+      </h2>
+      <p class="reveal reveal-delay-2 mt-5 text-lg font-medium text-brand-grape/90 dark:text-slate-200">
+        Venha com a família, traga o pet e monte a tigela perfeita no melhor buffet de açaí e sorvetes.
+      </p>
+      <div class="reveal reveal-delay-3 mt-9 flex flex-wrap justify-center gap-4">
+        <!-- Substitua o número pelo WhatsApp real da loja -->
+        <a href="https://wa.me/5500000000000" target="_blank" rel="noopener"
+           class="rounded-full bg-green-600 text-white font-bold px-8 py-3.5 text-lg shadow-xl hover:bg-green-700 hover:-translate-y-0.5 transition-all">
+          💬 Pedir pelo WhatsApp
+        </a>
+        <a href="#footer-mapa"
+           class="rounded-full bg-brand-purple text-white font-bold px-8 py-3.5 text-lg shadow-xl hover:bg-brand-grape hover:-translate-y-0.5 transition-all">
+          📍 Como chegar
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer id="footer-mapa" class="bg-brand-berry text-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid gap-10 md:grid-cols-4">
+      <!-- Marca -->
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3">
+          <svg class="w-12 h-12"><use href="#tigresa"/></svg>
+          <span class="text-3xl font-black text-brand-yellow">Yellow<span class="text-white">.</span></span>
+        </div>
+        <p class="mt-4 max-w-sm text-slate-400">
+          Açaí · Sorvete Doce · Sorvete Salgado · Fondue · Gelato Pet.<br/>
+          O melhor açaí e sorvete agora tem Cor!
+        </p>
+        <p class="mt-4 text-sm font-semibold text-brand-yellow">Aqui a coisa não tem igual — vale a pena provar!</p>
+      </div>
+
+      <!-- Horários / endereço (placeholders para editar) -->
+      <div>
+        <h3 class="font-extrabold text-white uppercase tracking-wider text-sm">Visite a gente</h3>
+        <ul class="mt-4 space-y-2.5 text-slate-400 text-sm">
+          <li>📍 Av. Principal, 123 — Centro<br/><span class="text-slate-500">(edite com o endereço real)</span></li>
+          <li>🕐 Todos os dias · 12h às 22h</li>
+          <li>💬 WhatsApp: (00) 00000-0000</li>
+        </ul>
+      </div>
+
+      <!-- Navegação -->
+      <div>
+        <h3 class="font-extrabold text-white uppercase tracking-wider text-sm">Navegue</h3>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          <li><a href="#cardapio"   class="text-slate-400 hover:text-brand-yellow transition-colors">Cardápio</a></li>
+          <li><a href="#buffet"     class="text-slate-400 hover:text-brand-yellow transition-colors">Buffet</a></li>
+          <li><a href="#gelato-pet" class="text-slate-400 hover:text-brand-yellow transition-colors">Gelato Pet</a></li>
+          <li><a href="#kids"       class="text-slate-400 hover:text-brand-yellow transition-colors">Espaço Kids</a></li>
+          <li><a href="#sobre"      class="text-slate-400 hover:text-brand-yellow transition-colors">Sobre nós</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+        <p>© 2026 Yellow Açaí &amp; Sorvetes. Todos os direitos reservados.</p>
+        <p>Feito com 💛 e muito açaí 💜</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== BOTÃO VOLTAR AO TOPO ==================== -->
+  <button x-show="showTop" x-cloak x-transition.opacity
+          @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+          class="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-brand-purple text-white text-xl font-black shadow-2xl hover:bg-brand-grape hover:-translate-y-1 transition-all"
+          aria-label="Voltar ao topo">↑</button>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script>
+    // Animações de entrada ao rolar — Intersection Observer
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target); // anima uma única vez
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    });
+  </script>
+
+  <style>[x-cloak]{ display:none !important; }</style>
+</body>
+</html>
