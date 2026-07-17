@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ============================================================
+       YELLOW — Açaí & Sorvetes · VERSÃO 2 (Amarelo dominante)
+       Website single-page — HTML5 + Tailwind CSS + Alpine.js
+       Cor principal: Amarelo vibrante (o roxo aparece só como
+       acento de açaí). Preto/marrom-escuro entra como contraste,
+       ecoando as manchas da onça-pintada.
+       Mascote: Yara, a onça-pintada — sorridente, segurando um
+       sorvete de casquinha na pata direita (SVG inline).
+       ============================================================ -->
+
+  <title>Yellow — Açaí &amp; Sorvetes | O melhor açaí e sorvete agora tem Cor!</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Yellow — Melhor Buffet de açaí e sorvetes!!!! Açaí, sorvete doce, sorvete salgado, fondue e Gelato Pet. Aqui tem sorvete para o seu pet também. Playground para crianças. Aqui a coisa não tem igual — vale a pena provar!" />
+  <meta name="keywords" content="açaí, sorvete, sorveteria, buffet de açaí, fondue, gelato pet, sorvete para pet, playground, onça pintada, Yellow" />
+  <meta name="author" content="Yellow Açaí & Sorvetes" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Yellow — Açaí & Sorvetes" />
+  <meta property="og:description" content="O melhor açaí e sorvete agora tem Cor! Yellow! Buffet de açaí, sorvete doce e salgado, fondue e Gelato Pet — aqui tem sorvete para o seu pet também." />
+  <meta property="og:site_name" content="Yellow Açaí & Sorvetes" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Favicon (placeholder — onça 🐆) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐆</text></svg>" />
+
+  <!-- Dados estruturados (SEO local) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "IceCreamShop",
+    "name": "Yellow Açaí & Sorvetes",
+    "slogan": "O melhor açaí e sorvete agora tem Cor! Yellow!",
+    "description": "Buffet de açaí e sorvetes, sorvete doce e salgado, fondue e Gelato Pet. Playground para crianças.",
+    "servesCuisine": ["Açaí", "Sorvete", "Fondue"],
+    "priceRange": "$$"
+  }
+  </script>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              yellow: '#FFC400',  /* amarelo vibrante do letreiro          */
+              gold:   '#F0A400',  /* dourado da pelagem da onça            */
+              amber:  '#FFAA00',  /* amarelo-laranja de apoio              */
+              ink:    '#201500',  /* preto-café das manchas (texto)        */
+              night:  '#171104',  /* fundo do modo escuro                  */
+              purple: '#6D28D9',  /* roxo açaí — apenas acento             */
+              cream:  '#FFFDF4'   /* branco-creme de fundo                 */
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
+          },
+          borderRadius: { 'blob': '2rem' }
+        }
+      }
+    }
+  </script>
+
+  <!-- Fonte Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Alpine.js via CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+  <!-- Aplica o tema salvo ANTES do primeiro paint (evita flash) -->
+  <script>
+    if (localStorage.theme === 'dark' ||
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <style>
+    /* ---------- Animações de entrada ao rolar (Intersection Observer) ---------- */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.in-view { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+    .reveal-delay-4 { transition-delay: .4s; }
+
+    /* ---------- Faixa deslizante (marquee) ---------- */
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .marquee-track { animation: marquee 22s linear infinite; }
+
+    /* ---------- Flutuação suave da mascote ---------- */
+    @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    .floaty { animation: floaty 4.5s ease-in-out infinite; }
+
+    /* ---------- Scrollbar discreta ---------- */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-thumb { background: #F0A400; border-radius: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* Respeita usuários que preferem menos movimento */
+    @media (prefers-reduced-motion: reduce) {
+      .marquee-track, .floaty { animation: none; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-brand-cream text-brand-ink dark:bg-brand-night dark:text-amber-50 antialiased selection:bg-brand-ink selection:text-brand-yellow"
+      x-data="{ mobileOpen: false, showTop: false,
+                dark: document.documentElement.classList.contains('dark'),
+                toggleDark() { this.dark = !this.dark;
+                               document.documentElement.classList.toggle('dark', this.dark);
+                               localStorage.theme = this.dark ? 'dark' : 'light'; } }"
+      @scroll.window="showTop = window.scrollY > 600">
+
+  <!-- ==================== MASCOTE (SVG reutilizável) ==================== -->
+  <svg width="0" height="0" class="absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="oncaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FFD34D"/>
+        <stop offset="100%" stop-color="#F0A400"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Yara, a onça-pintada Yellow — sorridente, segurando
+         um sorvete de casquinha na pata direita -->
+    <symbol id="onca" viewBox="0 0 220 240">
+      <!-- Orelhas arredondadas -->
+      <circle cx="60"  cy="40" r="25" fill="#E89B00"/>
+      <circle cx="160" cy="40" r="25" fill="#E89B00"/>
+      <circle cx="60"  cy="40" r="12" fill="#201500"/>
+      <circle cx="160" cy="40" r="12" fill="#201500"/>
+
+      <!-- Cabeça dourada -->
+      <ellipse cx="110" cy="108" rx="80" ry="72" fill="url(#oncaGrad)"/>
+
+      <!-- Rosetas (manchas características da onça-pintada) -->
+      <circle cx="48"  cy="84"  r="8" fill="none" stroke="#201500" stroke-width="4" stroke-dasharray="9 5"/>
+      <circle cx="41"  cy="118" r="6" fill="none" stroke="#201500" stroke-width="3.5" stroke-dasharray="7 4"/>
+      <circle cx="172" cy="84"  r="8" fill="none" stroke="#201500" stroke-width="4" stroke-dasharray="9 5"/>
+      <circle cx="179" cy="118" r="6" fill="none" stroke="#201500" stroke-width="3.5" stroke-dasharray="7 4"/>
+      <circle cx="110" cy="52"  r="7" fill="none" stroke="#201500" stroke-width="4" stroke-dasharray="8 5"/>
+      <circle cx="86"  cy="48"  r="3.5" fill="#201500"/>
+      <circle cx="134" cy="48"  r="3.5" fill="#201500"/>
+      <circle cx="64"  cy="152" r="3"   fill="#201500"/>
+      <circle cx="156" cy="152" r="3"   fill="#201500"/>
+
+      <!-- Sobrancelhas expressivas -->
+      <path d="M64 76 q16 -10 30 -4"  stroke="#201500" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M156 76 q-16 -10 -30 -4" stroke="#201500" stroke-width="5" stroke-linecap="round" fill="none"/>
+
+      <!-- Olhos grandes e expressivos -->
+      <ellipse cx="80"  cy="98" rx="15" ry="17" fill="#FFFFFF"/>
+      <ellipse cx="140" cy="98" rx="15" ry="17" fill="#FFFFFF"/>
+      <circle cx="83"  cy="101" r="8" fill="#201500"/>
+      <circle cx="137" cy="101" r="8" fill="#201500"/>
+      <circle cx="86"  cy="98"  r="3" fill="#FFFFFF"/>
+      <circle cx="140" cy="98"  r="3" fill="#FFFFFF"/>
+
+      <!-- Bochechas coradas -->
+      <ellipse cx="62"  cy="134" rx="9" ry="5.5" fill="#FF8A00" opacity="0.45"/>
+      <ellipse cx="158" cy="134" rx="9" ry="5.5" fill="#FF8A00" opacity="0.45"/>
+
+      <!-- Focinho -->
+      <ellipse cx="110" cy="146" rx="38" ry="27" fill="#FFF6DC"/>
+      <path d="M98 132 h24 q3 0 2 3 l-10 11 q-4 4 -8 0 l-10 -11 q-1 -3 2 -3 z" fill="#201500"/>
+
+      <!-- Sorriso largo + língua -->
+      <path d="M84 154 q26 24 52 0" stroke="#201500" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M100 165 q10 9 20 0 q-1 11 -10 11 q-9 0 -10 -11 z" fill="#E0559C"/>
+
+      <!-- Pontinhos de bigode -->
+      <circle cx="82"  cy="142" r="2" fill="#201500" opacity="0.7"/>
+      <circle cx="77"  cy="150" r="2" fill="#201500" opacity="0.7"/>
+      <circle cx="84"  cy="157" r="2" fill="#201500" opacity="0.7"/>
+      <circle cx="138" cy="142" r="2" fill="#201500" opacity="0.7"/>
+      <circle cx="143" cy="150" r="2" fill="#201500" opacity="0.7"/>
+      <circle cx="136" cy="157" r="2" fill="#201500" opacity="0.7"/>
+
+      <!-- Braço direito estendido (oferecendo o sorvete) -->
+      <path d="M64 152 Q36 160 38 178" stroke="#F0A400" stroke-width="16" fill="none" stroke-linecap="round"/>
+
+      <!-- Casquinha waffle -->
+      <path d="M26 182 L58 182 L42 228 Z" fill="#D98E32"/>
+      <path d="M31 192 L53 192 M35 204 L49 204 M30 186 L41 222 M54 186 L43 222" stroke="#B26E1E" stroke-width="2.5"/>
+
+      <!-- Bolas de sorvete: açaí + creme + cereja -->
+      <circle cx="42" cy="168" r="17" fill="#6D28D9"/>
+      <circle cx="42" cy="150" r="13" fill="#FFF1C9"/>
+      <circle cx="42" cy="139" r="4.5" fill="#E11D48"/>
+      <path d="M42 135 q3 -5 7 -6" stroke="#201500" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+      <!-- Pata segurando a casquinha (com manchas) -->
+      <circle cx="42" cy="184" r="16" fill="#F0A400"/>
+      <circle cx="37" cy="180" r="3" fill="#201500"/>
+      <circle cx="48" cy="186" r="2.4" fill="#201500"/>
+      <path d="M34 193 q3 3 6 0 M44 195 q3 3 6 0" stroke="#201500" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Brilho -->
+      <path d="M20 150 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 z" fill="#FFD34D"/>
+    </symbol>
+
+    <!-- Cluster decorativo de manchas (usado como textura de fundo) -->
+    <symbol id="manchas" viewBox="0 0 120 60">
+      <circle cx="18" cy="22" r="9"  fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="10 6"/>
+      <circle cx="52" cy="40" r="6"  fill="currentColor"/>
+      <circle cx="84" cy="18" r="8"  fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="8 5"/>
+      <circle cx="106" cy="44" r="4" fill="currentColor"/>
+    </symbol>
+  </svg>
+
+  <!-- ============================ NAVBAR ============================ -->
+  <header class="fixed inset-x-0 top-0 z-50 bg-brand-yellow/95 dark:bg-brand-ink/95 backdrop-blur shadow-lg">
+    <nav class="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16 sm:h-20" aria-label="Navegação principal">
+
+      <!-- Logo -->
+      <a href="#inicio" class="flex items-center gap-2 sm:gap-3 group">
+        <svg class="w-10 h-10 sm:w-12 sm:h-12 drop-shadow group-hover:scale-110 transition-transform" role="img" aria-label="Mascote Yellow — onça-pintada segurando sorvete">
+          <use href="#onca"/>
+        </svg>
+        <span class="text-2xl sm:text-3xl font-black tracking-tight text-brand-ink dark:text-brand-yellow">
+          Yellow<span class="text-white drop-shadow-sm">.</span>
+        </span>
+      </a>
+
+      <!-- Links desktop -->
+      <ul class="hidden lg:flex items-center gap-7 font-semibold text-brand-ink dark:text-amber-100">
+        <li><a href="#inicio"     class="hover:text-white dark:hover:text-brand-yellow transition-colors">Início</a></li>
+        <li><a href="#cardapio"   class="hover:text-white dark:hover:text-brand-yellow transition-colors">Cardápio</a></li>
+        <li><a href="#buffet"     class="hover:text-white dark:hover:text-brand-yellow transition-colors">Buffet</a></li>
+        <li><a href="#gelato-pet" class="hover:text-white dark:hover:text-brand-yellow transition-colors">Gelato Pet 🐾</a></li>
+        <li><a href="#kids"       class="hover:text-white dark:hover:text-brand-yellow transition-colors">Espaço Kids</a></li>
+        <li><a href="#sobre"      class="hover:text-white dark:hover:text-brand-yellow transition-colors">Sobre</a></li>
+      </ul>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Toggle dark/light -->
+        <button @click="toggleDark()"
+                class="w-10 h-10 rounded-full grid place-items-center bg-white/40 dark:bg-white/10 text-brand-ink dark:text-brand-yellow hover:scale-110 transition-transform"
+                :aria-label="dark ? 'Ativar modo claro' : 'Ativar modo escuro'">
+          <span x-text="dark ? '☀️' : '🌙'" class="text-lg"></span>
+        </button>
+
+        <!-- CTA -->
+        <a href="#visite"
+           class="hidden sm:inline-flex items-center gap-2 rounded-full bg-brand-ink text-brand-yellow font-bold px-5 py-2.5 shadow-md hover:bg-black hover:shadow-xl transition-all">
+          Peça agora
+        </a>
+
+        <!-- Hambúrguer mobile -->
+        <button class="lg:hidden w-10 h-10 grid place-items-center rounded-lg bg-white/40 dark:bg-white/10 text-brand-ink dark:text-brand-yellow"
+                @click="mobileOpen = !mobileOpen" :aria-expanded="mobileOpen" aria-label="Abrir menu">
+          <svg x-show="!mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <svg x-show="mobileOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Menu mobile -->
+    <div x-show="mobileOpen" x-cloak x-transition.origin.top
+         class="lg:hidden bg-brand-yellow dark:bg-brand-ink border-t border-white/30 shadow-xl">
+      <ul class="px-6 py-4 space-y-3 font-semibold text-brand-ink dark:text-amber-100">
+        <li><a @click="mobileOpen=false" href="#inicio"     class="block py-1.5">Início</a></li>
+        <li><a @click="mobileOpen=false" href="#cardapio"   class="block py-1.5">Cardápio</a></li>
+        <li><a @click="mobileOpen=false" href="#buffet"     class="block py-1.5">Buffet</a></li>
+        <li><a @click="mobileOpen=false" href="#gelato-pet" class="block py-1.5">Gelato Pet 🐾</a></li>
+        <li><a @click="mobileOpen=false" href="#kids"       class="block py-1.5">Espaço Kids</a></li>
+        <li><a @click="mobileOpen=false" href="#sobre"      class="block py-1.5">Sobre</a></li>
+        <li><a @click="mobileOpen=false" href="#visite"
+               class="block text-center mt-2 rounded-full bg-brand-ink text-brand-yellow font-bold px-5 py-2.5">Peça agora</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ============================ HERO ============================ -->
+  <section id="inicio" class="relative overflow-hidden pt-28 sm:pt-36 pb-20 sm:pb-28
+                              bg-gradient-to-br from-yellow-300 via-brand-yellow to-brand-amber
+                              dark:from-brand-ink dark:via-brand-night dark:to-black">
+    <!-- Manchas decorativas da onça -->
+    <svg class="pointer-events-none absolute top-24 left-6 w-40 text-brand-ink/10 dark:text-brand-yellow/10" aria-hidden="true"><use href="#manchas"/></svg>
+    <svg class="pointer-events-none absolute bottom-10 right-8 w-52 text-brand-ink/10 dark:text-brand-yellow/10 rotate-12" aria-hidden="true"><use href="#manchas"/></svg>
+    <div class="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white/40 dark:bg-brand-yellow/10 blur-3xl"></div>
+    <div class="pointer-events-none absolute -bottom-32 -right-16 w-96 h-96 rounded-full bg-brand-amber/50 dark:bg-brand-gold/10 blur-3xl"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Texto -->
+      <div class="text-center lg:text-left">
+        <p class="reveal inline-flex items-center gap-2 rounded-full bg-brand-ink text-brand-yellow text-sm sm:text-base font-bold px-4 py-1.5 shadow-md">
+          🏆 Melhor Buffet de açaí e sorvetes!!!!
+        </p>
+
+        <h1 class="reveal reveal-delay-1 mt-6 text-4xl sm:text-5xl xl:text-6xl font-black leading-[1.05] text-brand-ink dark:text-brand-yellow">
+          O melhor açaí e sorvete<br class="hidden sm:block" />
+          agora tem <span class="text-white drop-shadow-[0_3px_0_rgba(32,21,0,.45)]">Cor</span>!
+          <span class="block mt-2 text-brand-ink dark:text-white drop-shadow-[0_3px_0_rgba(255,196,0,.55)]">Yellow!</span>
+        </h1>
+
+        <p class="reveal reveal-delay-2 mt-6 text-lg sm:text-xl font-medium text-brand-ink/85 dark:text-amber-100 max-w-xl mx-auto lg:mx-0">
+          Açaí na tigela, sorvete doce, sorvete salgado, fondue e até <strong>Gelato Pet</strong> —
+          aqui a coisa não tem igual, <em>vale a pena provar!</em>
+        </p>
+
+        <div class="reveal reveal-delay-3 mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
+          <a href="#cardapio"
+             class="rounded-full bg-brand-ink text-brand-yellow font-bold px-8 py-3.5 text-lg shadow-xl hover:bg-black hover:-translate-y-0.5 transition-all">
+            Ver cardápio 🍧
+          </a>
+          <a href="#gelato-pet"
+             class="rounded-full bg-white/85 dark:bg-white/10 text-brand-ink dark:text-brand-yellow font-bold px-8 py-3.5 text-lg shadow-lg hover:bg-white hover:-translate-y-0.5 transition-all">
+            Sorvete para pets 🐶
+          </a>
+        </div>
+
+        <!-- Selos de confiança -->
+        <ul class="reveal reveal-delay-4 mt-10 flex flex-wrap justify-center lg:justify-start gap-x-8 gap-y-3 text-sm font-semibold text-brand-ink/75 dark:text-amber-200">
+          <li class="flex items-center gap-2">✔️ Buffet self-service</li>
+          <li class="flex items-center gap-2">✔️ Playground para crianças</li>
+          <li class="flex items-center gap-2">✔️ Ambiente para toda a família</li>
+        </ul>
+      </div>
+
+      <!-- Mascote -->
+      <div class="reveal reveal-delay-2 relative mx-auto">
+        <div class="absolute inset-0 m-auto w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-white/60 dark:bg-brand-yellow/10 blur-2xl"></div>
+        <svg class="floaty relative w-64 h-72 sm:w-80 sm:h-[22rem] xl:w-96 xl:h-[26rem] drop-shadow-2xl" role="img"
+             aria-label="Yara, a onça-pintada mascote da Yellow, sorrindo e oferecendo um sorvete de casquinha">
+          <use href="#onca"/>
+        </svg>
+        <p class="relative text-center mt-4 font-black text-brand-ink dark:text-brand-yellow text-lg tracking-wide">
+          Yara, a onça-pintada Yellow 🐆💛
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FAIXA MARQUEE ==================== -->
+  <div class="bg-brand-ink overflow-hidden py-3 border-y-4 border-brand-yellow" aria-hidden="true">
+    <div class="marquee-track flex w-max whitespace-nowrap gap-8 text-brand-yellow font-black text-lg tracking-widest uppercase">
+      <span>Açaí</span><span>•</span><span>Sorvete Doce</span><span>•</span><span>Sorvete Salgado</span><span>•</span><span>Fondue</span><span>•</span><span>Gelato Pet</span><span>•</span>
+      <span>Açaí</span><span>•</span><span>Sorvete Doce</span><span>•</span><span>Sorvete Salgado</span><span>•</span><span>Fondue</span><span>•</span><span>Gelato Pet</span><span>•</span>
+    </div>
+  </div>
+
+  <!-- ============================ CARDÁPIO ============================ -->
+  <section id="cardapio" class="py-20 sm:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto">
+        <p class="reveal font-bold text-brand-gold dark:text-brand-yellow uppercase tracking-widest text-sm">Nosso cardápio</p>
+        <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-ink dark:text-brand-yellow">
+          Cinco jeitos de se apaixonar 💛
+        </h2>
+        <p class="reveal reveal-delay-2 mt-4 text-lg text-stone-600 dark:text-amber-100/80">
+          Do clássico açaí na tigela ao inédito sorvete salgado — tem sabor para todo mundo (e para todo pet).
+        </p>
+      </div>
+
+      <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <!-- Card: Açaí (único acento roxo do site) -->
+        <article class="reveal group rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all border-b-4 border-brand-purple">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-purple/10 dark:bg-brand-purple/30 text-4xl group-hover:scale-110 transition-transform">🍇</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-ink dark:text-brand-yellow">Açaí</h3>
+          <p class="mt-3 text-stone-600 dark:text-amber-100/80">
+            Cremoso, gelado e servido do seu jeito: monte sua tigela no buffet com dezenas de complementos, frutas e caldas.
+          </p>
+        </article>
+
+        <!-- Card: Sorvete Doce -->
+        <article class="reveal reveal-delay-1 group rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all border-b-4 border-brand-yellow">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-yellow/20 text-4xl group-hover:scale-110 transition-transform">🍦</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-ink dark:text-brand-yellow">Sorvete Doce</h3>
+          <p class="mt-3 text-stone-600 dark:text-amber-100/80">
+            Os clássicos que todo mundo ama e as receitas exclusivas da casa, feitos com ingredientes selecionados.
+          </p>
+        </article>
+
+        <!-- Card: Sorvete Salgado -->
+        <article class="reveal reveal-delay-2 group rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all border-b-4 border-brand-gold">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-gold/15 text-4xl group-hover:scale-110 transition-transform">🧀</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-ink dark:text-brand-yellow">Sorvete Salgado</h3>
+          <p class="mt-3 text-stone-600 dark:text-amber-100/80">
+            A nossa ousadia premiada: sabores salgados surpreendentes que você só encontra aqui. Duvida? Vale a pena provar!
+          </p>
+        </article>
+
+        <!-- Card: Fondue -->
+        <article class="reveal reveal-delay-1 group rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all border-b-4 border-brand-yellow">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-yellow/20 text-4xl group-hover:scale-110 transition-transform">🫕</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-ink dark:text-brand-yellow">Fondue</h3>
+          <p class="mt-3 text-stone-600 dark:text-amber-100/80">
+            Chocolate quentinho encontrando sorvete gelado: a combinação perfeita para compartilhar com quem você gosta.
+          </p>
+        </article>
+
+        <!-- Card: Gelato Pet (destaque em amarelo + preto) -->
+        <article class="reveal reveal-delay-2 group rounded-blob bg-gradient-to-br from-brand-yellow to-brand-amber p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all sm:col-span-2 lg:col-span-1">
+          <div class="w-16 h-16 grid place-items-center rounded-2xl bg-brand-ink/10 text-4xl">🐾</div>
+          <h3 class="mt-5 text-2xl font-extrabold text-brand-ink">Gelato Pet</h3>
+          <p class="mt-3 text-brand-ink/80 font-medium">
+            Aqui tem sorvete para o seu pet também! Gelato desenvolvido especialmente para cães, sem açúcar e sem lactose.
+          </p>
+          <a href="#gelato-pet" class="mt-5 inline-block font-bold text-brand-ink underline underline-offset-4 hover:text-black transition-colors">
+            Conhecer o Gelato Pet →
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ BUFFET ============================ -->
+  <section id="buffet" class="py-20 sm:py-28 bg-brand-yellow/25 dark:bg-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="reveal font-bold text-brand-gold dark:text-brand-yellow uppercase tracking-widest text-sm">Buffet self-service</p>
+        <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-ink dark:text-brand-yellow">
+          Melhor Buffet de açaí e sorvetes!!!!
+        </h2>
+        <p class="reveal reveal-delay-2 mt-5 text-lg text-stone-600 dark:text-amber-100/80">
+          Monte a combinação perfeita: você escolhe a base, os complementos, as frutas e as caldas.
+          No buffet da Yellow, cada tigela é única — do jeitinho que você (ou seu pet 🐶) merece.
+        </p>
+        <ul class="reveal reveal-delay-3 mt-8 space-y-4 text-stone-700 dark:text-amber-100 font-medium">
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🍨</span> Dezenas de sabores de sorvete doce e salgado</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🍓</span> Complementos fresquinhos repostos o dia todo</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🍫</span> Estação de fondue e caldas quentes</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">👨‍👩‍👧‍👦</span> Espaço amplo e confortável para toda a família</li>
+        </ul>
+      </div>
+
+      <!-- Painel "letreiro": amarelo com texto preto, como a fachada -->
+      <div class="reveal reveal-delay-2">
+        <div class="relative rounded-blob bg-gradient-to-br from-brand-yellow to-brand-amber p-10 sm:p-14 text-center shadow-2xl overflow-hidden">
+          <svg class="pointer-events-none absolute top-4 left-4 w-32 text-brand-ink/10" aria-hidden="true"><use href="#manchas"/></svg>
+          <svg class="pointer-events-none absolute bottom-4 right-4 w-32 text-brand-ink/10 rotate-180" aria-hidden="true"><use href="#manchas"/></svg>
+          <div class="text-7xl sm:text-8xl">🍧</div>
+          <p class="mt-6 text-2xl sm:text-3xl font-black text-brand-ink leading-snug">
+            “Aqui a coisa não tem igual —<br /> vale a pena provar!”
+          </p>
+          <p class="mt-4 text-brand-ink/60 font-semibold">Slogan oficial da casa 💛</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ GELATO PET ============================ -->
+  <section id="gelato-pet" class="py-20 sm:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Painel ilustrativo: preto + amarelo (contraste onça) -->
+      <div class="reveal order-2 lg:order-1">
+        <div class="rounded-blob bg-brand-ink p-10 sm:p-14 text-center shadow-2xl relative overflow-hidden">
+          <svg class="pointer-events-none absolute -top-2 -right-2 w-40 text-brand-yellow/15" aria-hidden="true"><use href="#manchas"/></svg>
+          <div class="text-7xl sm:text-8xl">🐕🍦</div>
+          <p class="mt-6 text-2xl sm:text-3xl font-black text-brand-yellow leading-snug">
+            Aqui tem sorvete<br />para o seu pet também!
+          </p>
+          <p class="mt-4 text-amber-200/70 font-semibold">Gelato Pet — exclusividade Yellow 🐾</p>
+        </div>
+      </div>
+
+      <div class="order-1 lg:order-2">
+        <p class="reveal font-bold text-brand-gold dark:text-brand-yellow uppercase tracking-widest text-sm">Gelato Pet 🐾</p>
+        <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-ink dark:text-brand-yellow">
+          Sobremesa gelada para o melhor amigo
+        </h2>
+        <p class="reveal reveal-delay-2 mt-5 text-lg text-stone-600 dark:text-amber-100/80">
+          O passeio ficou completo: enquanto você saboreia seu açaí, seu companheiro de quatro patas
+          ganha um gelato feito sob medida para ele.
+        </p>
+        <ul class="reveal reveal-delay-3 mt-8 space-y-4 text-stone-700 dark:text-amber-100 font-medium">
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">✅</span> Receita própria para cães: sem açúcar, sem lactose e sem corantes</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🥣</span> Servido em potinho individual, na medida certa</li>
+          <li class="flex items-start gap-3"><span class="mt-0.5 text-xl">🐶</span> Ambiente pet friendly com área externa coberta</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ ESPAÇO KIDS ============================ -->
+  <section id="kids" class="py-20 sm:py-28 bg-gradient-to-br from-brand-yellow to-brand-amber relative overflow-hidden">
+    <svg class="pointer-events-none absolute top-8 left-8 w-44 text-brand-ink/10" aria-hidden="true"><use href="#manchas"/></svg>
+    <svg class="pointer-events-none absolute bottom-8 right-8 w-44 text-brand-ink/10 -rotate-12" aria-hidden="true"><use href="#manchas"/></svg>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+      <p class="reveal font-bold text-brand-ink/70 uppercase tracking-widest text-sm">Espaço Kids</p>
+      <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-ink">
+        Playground para crianças 🎠
+      </h2>
+      <p class="reveal reveal-delay-2 mt-5 text-lg text-brand-ink/80 max-w-2xl mx-auto font-medium">
+        Enquanto os pequenos brincam com segurança no nosso playground, os adultos aproveitam o açaí com tranquilidade.
+        A Yellow foi feita para a família inteira — inclusive a parte que não para quieta.
+      </p>
+      <div class="reveal reveal-delay-3 mt-12 grid sm:grid-cols-3 gap-6">
+        <div class="rounded-blob bg-white/70 backdrop-blur p-8 shadow-lg">
+          <div class="text-5xl">🛝</div>
+          <h3 class="mt-4 font-extrabold text-brand-ink text-xl">Brinquedos seguros</h3>
+          <p class="mt-2 text-brand-ink/70 text-sm">Estrutura pensada para a diversão (e a tranquilidade dos pais).</p>
+        </div>
+        <div class="rounded-blob bg-white/70 backdrop-blur p-8 shadow-lg">
+          <div class="text-5xl">🎉</div>
+          <h3 class="mt-4 font-extrabold text-brand-ink text-xl">Festas e aniversários</h3>
+          <p class="mt-2 text-brand-ink/70 text-sm">Comemore na Yellow com buffet de açaí, sorvete e fondue.</p>
+        </div>
+        <div class="rounded-blob bg-white/70 backdrop-blur p-8 shadow-lg">
+          <div class="text-5xl">👀</div>
+          <h3 class="mt-4 font-extrabold text-brand-ink text-xl">Visão total do espaço</h3>
+          <p class="mt-2 text-brand-ink/70 text-sm">Layout aberto: você acompanha as crianças de qualquer mesa.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ SOBRE + MASCOTE ============================ -->
+  <section id="sobre" class="py-20 sm:py-28">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <p class="reveal font-bold text-brand-gold dark:text-brand-yellow uppercase tracking-widest text-sm">Nossa história</p>
+        <h2 class="reveal reveal-delay-1 mt-3 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-ink dark:text-brand-yellow">
+          Por que <span class="text-brand-gold dark:text-white">Yellow</span>?
+        </h2>
+        <p class="reveal reveal-delay-2 mt-6 text-lg text-stone-600 dark:text-amber-100/80 leading-relaxed max-w-3xl mx-auto">
+          Porque sabor tem cor — e a nossa é o amarelo vibrante da alegria. A Yellow nasceu para ser mais
+          do que uma sorveteria: um lugar onde a família inteira se encontra, do vovô ao pet.
+          E levamos a sério uma única regra: <em>aqui a coisa não tem igual — vale a pena provar!</em>
+        </p>
+      </div>
+
+      <!-- A mascote: significado -->
+      <div class="mt-16 grid lg:grid-cols-[auto_1fr] gap-10 items-center rounded-blob bg-brand-yellow/25 dark:bg-white/5 p-8 sm:p-12">
+        <svg class="reveal w-48 h-56 sm:w-56 sm:h-64 mx-auto drop-shadow-xl" role="img"
+             aria-label="Yara, a onça-pintada mascote da Yellow">
+          <use href="#onca"/>
+        </svg>
+        <div>
+          <h3 class="reveal text-2xl sm:text-3xl font-black text-brand-ink dark:text-brand-yellow">
+            Yara, a onça-pintada 🐆
+          </h3>
+          <p class="reveal reveal-delay-1 mt-4 text-stone-600 dark:text-amber-100/80 leading-relaxed">
+            Nossa mascote não foi escolhida por acaso: a onça-pintada é um dos animais mais icônicos do Brasil.
+            Sorridente e sempre de casquinha na pata, a Yara representa o que a Yellow tem de melhor:
+          </p>
+          <ul class="reveal reveal-delay-2 mt-5 space-y-3 text-stone-700 dark:text-amber-100 font-medium">
+            <li class="flex items-start gap-3"><span class="mt-0.5">🇧🇷</span> Identidade brasileira de verdade — da fauna ao açaí</li>
+            <li class="flex items-start gap-3"><span class="mt-0.5">⚡</span> Força, agilidade e autenticidade</li>
+            <li class="flex items-start gap-3"><span class="mt-0.5">🧒</span> Conexão com as crianças e as famílias</li>
+            <li class="flex items-start gap-3"><span class="mt-0.5">⭐</span> Uma marca impossível de esquecer</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Números da casa -->
+      <div class="reveal reveal-delay-3 mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+        <div class="rounded-2xl bg-brand-yellow/25 dark:bg-white/5 p-6">
+          <p class="text-3xl font-black text-brand-gold dark:text-brand-yellow">30+</p>
+          <p class="mt-1 text-sm font-semibold text-stone-600 dark:text-amber-100/80">sabores no buffet</p>
+        </div>
+        <div class="rounded-2xl bg-brand-yellow/25 dark:bg-white/5 p-6">
+          <p class="text-3xl font-black text-brand-gold dark:text-brand-yellow">5</p>
+          <p class="mt-1 text-sm font-semibold text-stone-600 dark:text-amber-100/80">linhas de produto</p>
+        </div>
+        <div class="rounded-2xl bg-brand-yellow/25 dark:bg-white/5 p-6">
+          <p class="text-3xl font-black text-brand-gold dark:text-brand-yellow">100%</p>
+          <p class="mt-1 text-sm font-semibold text-stone-600 dark:text-amber-100/80">pet friendly</p>
+        </div>
+        <div class="rounded-2xl bg-brand-yellow/25 dark:bg-white/5 p-6">
+          <p class="text-3xl font-black text-brand-gold dark:text-brand-yellow">1</p>
+          <p class="mt-1 text-sm font-semibold text-stone-600 dark:text-amber-100/80">onça de casquinha 🐆</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ DEPOIMENTOS ============================ -->
+  <section class="py-20 sm:py-28 bg-brand-yellow/25 dark:bg-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="reveal text-center text-3xl sm:text-4xl font-black text-brand-ink dark:text-brand-yellow">
+        Quem prova, aprova 💬
+      </h2>
+      <p class="reveal reveal-delay-1 mt-3 text-center text-stone-500 dark:text-amber-100/60 text-sm">
+        (Espaço para avaliações reais dos seus clientes — Google, iFood e Instagram)
+      </p>
+      <div class="mt-12 grid md:grid-cols-3 gap-6 lg:gap-8">
+        <figure class="reveal rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg">
+          <div class="text-brand-gold text-xl" aria-label="5 estrelas">★★★★★</div>
+          <blockquote class="mt-4 text-stone-600 dark:text-amber-100/80 italic">“O açaí mais cremoso da cidade e o buffet é completo demais. Meu filho não quer mais sair do playground!”</blockquote>
+          <figcaption class="mt-5 font-bold text-brand-ink dark:text-brand-yellow">— Cliente Yellow</figcaption>
+        </figure>
+        <figure class="reveal reveal-delay-1 rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg">
+          <div class="text-brand-gold text-xl" aria-label="5 estrelas">★★★★★</div>
+          <blockquote class="mt-4 text-stone-600 dark:text-amber-100/80 italic">“Levei minha cachorra e ela ganhou um Gelato Pet. Nunca vi esse carinho em outra sorveteria!”</blockquote>
+          <figcaption class="mt-5 font-bold text-brand-ink dark:text-brand-yellow">— Cliente Yellow</figcaption>
+        </figure>
+        <figure class="reveal reveal-delay-2 rounded-blob bg-white dark:bg-white/5 p-8 shadow-lg">
+          <div class="text-brand-gold text-xl" aria-label="5 estrelas">★★★★★</div>
+          <blockquote class="mt-4 text-stone-600 dark:text-amber-100/80 italic">“Sorvete salgado parecia estranho… até eu provar. Agora é parada obrigatória no fim de semana.”</blockquote>
+          <figcaption class="mt-5 font-bold text-brand-ink dark:text-brand-yellow">— Cliente Yellow</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CTA FINAL ============================ -->
+  <section id="visite" class="py-20 sm:py-28 bg-gradient-to-br from-yellow-300 via-brand-yellow to-brand-amber dark:from-brand-ink dark:via-brand-night dark:to-black relative overflow-hidden">
+    <svg class="pointer-events-none absolute -top-2 right-10 w-56 text-brand-ink/10 dark:text-brand-yellow/10" aria-hidden="true"><use href="#manchas"/></svg>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+      <svg class="reveal w-28 h-32 mx-auto drop-shadow-xl" role="img" aria-label="Mascote Yellow oferecendo um sorvete">
+        <use href="#onca"/>
+      </svg>
+      <h2 class="reveal reveal-delay-1 mt-6 text-3xl sm:text-4xl xl:text-5xl font-black text-brand-ink dark:text-brand-yellow">
+        Bateu a vontade? A Yellow te espera! 💛
+      </h2>
+      <p class="reveal reveal-delay-2 mt-5 text-lg font-medium text-brand-ink/85 dark:text-amber-100">
+        Venha com a família, traga o pet e monte a tigela perfeita no melhor buffet de açaí e sorvetes.
+      </p>
+      <div class="reveal reveal-delay-3 mt-9 flex flex-wrap justify-center gap-4">
+        <!-- Substitua o número pelo WhatsApp real da loja -->
+        <a href="https://wa.me/5500000000000" target="_blank" rel="noopener"
+           class="rounded-full bg-green-600 text-white font-bold px-8 py-3.5 text-lg shadow-xl hover:bg-green-700 hover:-translate-y-0.5 transition-all">
+          💬 Pedir pelo WhatsApp
+        </a>
+        <a href="#footer-mapa"
+           class="rounded-full bg-brand-ink text-brand-yellow font-bold px-8 py-3.5 text-lg shadow-xl hover:bg-black hover:-translate-y-0.5 transition-all">
+          📍 Como chegar
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer id="footer-mapa" class="bg-brand-ink text-amber-100/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid gap-10 md:grid-cols-4">
+      <!-- Marca -->
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3">
+          <svg class="w-12 h-14"><use href="#onca"/></svg>
+          <span class="text-3xl font-black text-brand-yellow">Yellow<span class="text-white">.</span></span>
+        </div>
+        <p class="mt-4 max-w-sm text-amber-100/60">
+          Açaí · Sorvete Doce · Sorvete Salgado · Fondue · Gelato Pet.<br/>
+          O melhor açaí e sorvete agora tem Cor!
+        </p>
+        <p class="mt-4 text-sm font-semibold text-brand-yellow">Aqui a coisa não tem igual — vale a pena provar!</p>
+      </div>
+
+      <!-- Horários / endereço (placeholders para editar) -->
+      <div>
+        <h3 class="font-extrabold text-white uppercase tracking-wider text-sm">Visite a gente</h3>
+        <ul class="mt-4 space-y-2.5 text-amber-100/60 text-sm">
+          <li>📍 Av. Principal, 123 — Centro<br/><span class="text-amber-100/40">(edite com o endereço real)</span></li>
+          <li>🕐 Todos os dias · 12h às 22h</li>
+          <li>💬 WhatsApp: (00) 00000-0000</li>
+        </ul>
+      </div>
+
+      <!-- Navegação -->
+      <div>
+        <h3 class="font-extrabold text-white uppercase tracking-wider text-sm">Navegue</h3>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          <li><a href="#cardapio"   class="text-amber-100/60 hover:text-brand-yellow transition-colors">Cardápio</a></li>
+          <li><a href="#buffet"     class="text-amber-100/60 hover:text-brand-yellow transition-colors">Buffet</a></li>
+          <li><a href="#gelato-pet" class="text-amber-100/60 hover:text-brand-yellow transition-colors">Gelato Pet</a></li>
+          <li><a href="#kids"       class="text-amber-100/60 hover:text-brand-yellow transition-colors">Espaço Kids</a></li>
+          <li><a href="#sobre"      class="text-amber-100/60 hover:text-brand-yellow transition-colors">Sobre nós</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-amber-100/40">
+        <p>© 2026 Yellow Açaí &amp; Sorvetes. Todos os direitos reservados.</p>
+        <p>Feito com 💛 e muito açaí 🐆</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== BOTÃO VOLTAR AO TOPO ==================== -->
+  <button x-show="showTop" x-cloak x-transition.opacity
+          @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+          class="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-brand-ink text-brand-yellow text-xl font-black shadow-2xl hover:bg-black hover:-translate-y-1 transition-all"
+          aria-label="Voltar ao topo">↑</button>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script>
+    // Animações de entrada ao rolar — Intersection Observer
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target); // anima uma única vez
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    });
+  </script>
+
+  <style>[x-cloak]{ display:none !important; }</style>
+</body>
+</html>

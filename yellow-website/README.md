@@ -1,27 +1,40 @@
-# 🐯💛 Yellow — Açaí & Sorvetes
+# 🐆💛 Yellow — Açaí & Sorvetes
 
 Website single-page profissional da sorveteria **Yellow**, construído em um único arquivo HTML.
 
 > **"O melhor açaí e sorvete agora tem Cor! Yellow!"**
 
+## 📁 Versões disponíveis
+
+| Versão | Arquivo | Cor principal | Mascote |
+|---|---|---|---|
+| **V1** | `index.html` | Amarelo + roxo açaí (50/50) | Tili, a tigresa de óculos |
+| **V2** | `v2/index.html` | **Amarelo dominante** (roxo só como acento de açaí; preto das manchas como contraste) | **Yara, a onça-pintada** — sorridente, segurando sorvete de casquinha na pata direita |
+
+A V2 segue o documento oficial da mascote: onça-pintada cartoonizada com pelagem dourada e
+rosetas pretas, olhos expressivos, sobrancelhas, bochechas coradas e pose oferecendo o produto.
+Inclui também uma seção "Yara, a onça-pintada" explicando o significado da mascote
+(identidade brasileira, força, agilidade e conexão com o público familiar).
+
 ## 🚀 Como usar
 
-1. Baixe o arquivo `index.html`.
+1. Baixe o arquivo da versão escolhida (`index.html` ou `v2/index.html`).
 2. Abra direto no navegador (duplo clique) — **precisa de internet** na primeira vez, pois Tailwind CSS, Alpine.js e a fonte Inter são carregados via CDN.
 3. Para publicar, envie o arquivo para qualquer hospedagem estática: **Netlify, Vercel, GitHub Pages, Cloudflare Pages** ou o cPanel do seu provedor.
 
 ## 🎨 Identidade visual
 
-| Elemento | Valor |
-|---|---|
-| Amarelo vibrante (letreiro) | `#FFC400` |
-| Amarelo-laranja de apoio | `#FFAA00` |
-| Roxo açaí | `#6D28D9` |
-| Roxo profundo | `#4C1D95` |
-| Roxo quase-preto (dark mode) | `#2E1065` |
-| Branco-creme | `#FFFDF4` |
-| Fonte | Inter (Google Fonts) |
-| Mascote | **Tili**, a tigresa de óculos (SVG inline — sem imagem externa) |
+| Elemento | V1 | V2 |
+|---|---|---|
+| Amarelo vibrante (letreiro) | `#FFC400` | `#FFC400` (cor principal) |
+| Dourado da pelagem | — | `#F0A400` |
+| Amarelo-laranja de apoio | `#FFAA00` | `#FFAA00` |
+| Roxo açaí | `#6D28D9` (cor de destaque) | `#6D28D9` (apenas acento no card/sorvete de açaí) |
+| Contraste escuro | Roxo `#4C1D95` / `#2E1065` | Preto-café `#201500` (manchas da onça) |
+| Fundo dark mode | Roxo quase-preto `#2E1065` | Marrom quase-preto `#171104` |
+| Branco-creme | `#FFFDF4` | `#FFFDF4` |
+| Fonte | Inter (Google Fonts) | Inter (Google Fonts) |
+| Mascote | **Tili**, tigresa de óculos (SVG inline) | **Yara**, onça-pintada com casquinha (SVG inline) |
 
 ## ✏️ O que personalizar antes de publicar
 
